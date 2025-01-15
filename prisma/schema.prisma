@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Admin {
+  id        Int    @map("id") @id @default(autoincrement())
+  username  String @map("username") @db.VarChar(20)
+  adminNama String @map("admin_nama") @db.VarChar(60)
+  password  String @map("password") @db.VarChar(15)
+  email     String @map("email") @db.VarChar(60)
+
+  @@map("tbladmin")
+/// @@ignore
+}
+
+model bantu_jawab {
+  id_bantu_jawab    Int                  @id @default(autoincrement())
+  nama_bantu_jawab  String?              @db.VarChar(50)
+  email_bantu_jawab String?              @db.VarChar(50)
+  isi_bantu_jawab   String?              @db.Text
+  id_tanya_jawab    Int?
+  tgl_bantu_jawab   DateTime?            @default(now()) @db.Timestamp(0)
+  publish           bantu_jawab_publish? @default(dbgenerated("1"))
+}
+
+model guest_book {
+  id         Int      @id @default(autoincrement())
+  nama       String   @db.VarChar(60)
+  telpon     String   @db.VarChar(22)
+  email      String   @db.VarChar(60)
+  pertanyaan String   @db.Text
+  tgl        DateTime @default(now()) @db.Timestamp(0)
+}
+
+model kategori {
+  id       Int    @id @default(autoincrement())
+  kategori String @db.VarChar(50)
+
+  @@index([kategori], map: "idx_kategori")
+}
+
+model links {
+  id    Int     @id @default(autoincrement()) @db.SmallInt
+  url   String  @db.VarChar(30)
+  title String? @db.VarChar(50)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sessions {
+  session_id    String @db.VarChar(255)
+  ip_address    String @db.VarChar(255)
+  user_agent    String @db.VarChar(255)
+  last_activity String @db.VarChar(11)
+
+  @@ignore
+}
+
+model tanyajawab {
+  id          Int      @id @default(autoincrement())
+  nama        String   @db.VarChar(100)
+  email       String   @db.VarChar(100)
+  kategori_id Int
+  pertanyaan  String   @db.Text
+  jawaban     String   @db.Text
+  id_admin    Int
+  tgl         DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([kategori_id], map: "fk_kategori")
+  @@index([nama, email], map: "idx_nama_email")
+  @@fulltext([pertanyaan], map: "idx_pertanyaan")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tblartikel {
+  id          Int      @id @default(autoincrement())
+  Judul String   @db.Text
+  Isi   String   @db.Text
+  Tgl   DateTime @db.Date
+
+/// @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tblkonselor {
+  id            Int                        @id @default(autoincrement())
+  nama_jabatan  String                     @db.VarChar(100)
+  email         String                     @db.VarChar(60)
+  password      String                     @db.VarChar(15)
+  sex           tblkonselor_sex
+  pendidikan    String?                    @db.Text
+  pengalaman    String?                    @db.Text
+  alamat        String?                    @db.VarChar(150)
+  telpon        String?                    @db.VarChar(30)
+  tampil_email  tblkonselor_tampil_email?
+  tampil_hp     tblkonselor_tampil_hp?
+  tampil_alamat tblkonselor_tampil_alamat?
+  gambar        String?                    @db.VarChar(150)
+
+  /// @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tblnews {
+  id          Int      @id @default(autoincrement())
+  Judul String   @db.Text
+  Isi   String   @db.Text
+  Tgl   DateTime @db.Date
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tblpages {
+  id          Int      @id @default(autoincrement())
+  Judul       String @db.Text
+  Isi         String @db.Text
+
+  /// @@ignore
+}
+
+enum tblkonselor_sex {
+  P
+  L
+}
+
+enum bantu_jawab_publish {
+   DRAFT @map("0")
+   PUBLISHED @map("1")
+}
+
+enum tblkonselor_tampil_email {
+  N
+  Y
+}
+
+enum tblkonselor_tampil_hp {
+  N
+  Y
+}
+
+enum tblkonselor_tampil_alamat {
+  N
+  Y
+}
