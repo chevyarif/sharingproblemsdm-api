@@ -18,6 +18,7 @@ export class PertanyaanService {
 
     const lowerSearch = search ? search.toLowerCase() : undefined;
 
+    // Fetch data from database
     const artikel = await this.prisma.pertanyaan.findMany({
       skip: skip,
       take: take,
@@ -28,6 +29,7 @@ export class PertanyaanService {
         : {},
     });
 
+    // Count total records for pagination
     const totalPertanyaan = await this.prisma.pertanyaan.count({
       where: search
         ? {
@@ -36,8 +38,25 @@ export class PertanyaanService {
         : {},
     });
 
+    // Apply masking to each record
+    const maskedData = artikel.map((item) => {
+      // Mask email
+      const emailParts = item.email.split('@');
+      const maskedEmail = emailParts[0].slice(0, 4) + 'xxx@' + emailParts[1];
+
+      // Mask nama
+      const maskedNama =
+        item.nama.length > 5 ? item.nama.slice(0, 5) + '...' : item.nama;
+
+      return {
+        ...item,
+        email: maskedEmail,
+        nama: maskedNama,
+      };
+    });
+
     return {
-      data: artikel,
+      data: maskedData,
       pagination: {
         page: page,
         limit: limit,
@@ -49,7 +68,30 @@ export class PertanyaanService {
 
   // Ambil pertanyaan berdasarkan ID
   async findPertanyaanById(id: number) {
-    return this.prisma.pertanyaan.findUnique({ where: { id } });
+    const pertanyaan = await this.prisma.pertanyaan.findUnique({
+      where: { id },
+    });
+
+    if (pertanyaan) {
+      // Mask email
+      const emailParts = pertanyaan.email.split('@');
+      const maskedEmail = emailParts[0].slice(0, 4) + 'xxx@' + emailParts[1];
+
+      // Mask nama
+      const maskedNama =
+        pertanyaan.nama.length > 5
+          ? pertanyaan.nama.slice(0, 5) + '...'
+          : pertanyaan.nama;
+
+      // Return the masked data
+      return {
+        ...pertanyaan,
+        email: maskedEmail,
+        nama: maskedNama,
+      };
+    }
+
+    return null;
   }
 
   // Update pertanyaan berdasarkan ID
