@@ -11,12 +11,16 @@ datasource db {
 model Admin {
   id        Int    @map("id") @id @default(autoincrement())
   username  String @map("username") @db.VarChar(20)
-  adminNama String @map("admin_nama") @db.VarChar(60)
+  fullname String @map("full_name") @db.VarChar(60)
   password  String @map("password") @db.VarChar(15)
-  email     String @map("email") @db.VarChar(60)
+  email     String @map("email") @db.VarChar(60) @unique
+  role      tbladmin_role
+  status    tbladmin_status
+  created_at DateTime @default(now())
+
+  password_resets password_resets[]
 
   @@map("tbladmin")
-/// @@ignore
 }
 
 model bantu_jawab {
@@ -61,72 +65,97 @@ model sessions {
   @@ignore
 }
 
-model tanyajawab {
+model Pertanyaan {
   id          Int      @id @default(autoincrement())
   nama        String   @db.VarChar(100)
   email       String   @db.VarChar(100)
-  kategori_id Int
+  kategori_id Int?
   pertanyaan  String   @db.Text
-  jawaban     String   @db.Text
-  id_admin    Int
+  jawaban     String?   @db.Text
+  id_admin    Int?
   tgl         DateTime @default(now()) @db.Timestamp(0)
 
   @@index([kategori_id], map: "fk_kategori")
   @@index([nama, email], map: "idx_nama_email")
   @@fulltext([pertanyaan], map: "idx_pertanyaan")
+  @@map("tanyajawab")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model tblartikel {
+model Artikel {
   id          Int      @id @default(autoincrement())
-  Judul String   @db.Text
-  Isi   String   @db.Text
-  Tgl   DateTime @db.Date
-
-/// @@ignore
+  judul String  @map("Judul") @db.Text
+  isi   String  @map("Isi")  @db.Text
+  tgl   DateTime @map("Tgl")  @db.Date
+  @@map("tblartikel")
+  /// @@ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model tblkonselor {
-  id            Int                        @id @default(autoincrement())
-  nama_jabatan  String                     @db.VarChar(100)
-  email         String                     @db.VarChar(60)
-  password      String                     @db.VarChar(15)
+model Konselor {
+  id            Int                         @id @default(autoincrement())
+  jabatan       String                      @map("nama_jabatan") @db.VarChar(100)
+  email         String                      @unique @db.VarChar(60)
+  password      String                      @db.VarChar(15)
   sex           tblkonselor_sex
-  pendidikan    String?                    @db.Text
-  pengalaman    String?                    @db.Text
-  alamat        String?                    @db.VarChar(150)
-  telpon        String?                    @db.VarChar(30)
+  pendidikan    String?                     @db.Text
+  pengalaman    String?                     @db.Text
+  alamat        String?                     @db.VarChar(150)
+  telpon        String?                     @db.VarChar(30)
   tampil_email  tblkonselor_tampil_email?
   tampil_hp     tblkonselor_tampil_hp?
   tampil_alamat tblkonselor_tampil_alamat?
   gambar        String?                    @db.VarChar(150)
 
+  @@map("tblkonselor")
   /// @@ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model tblnews {
-  id          Int      @id @default(autoincrement())
-  Judul String   @db.Text
-  Isi   String   @db.Text
-  Tgl   DateTime @db.Date
+model News {
+  id    Int     @id @default(autoincrement())
+  judul String  @map("Judul") @db.Text
+  isi   String  @map("Isi")  @db.Text
+  tgl   DateTime @map("Tgl")  @db.Date
 
-  @@ignore
+  @@map("tblnews")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model tblpages {
-  id          Int      @id @default(autoincrement())
-  Judul       String @db.Text
-  Isi         String @db.Text
+model Pages {
+  id          Int     @id @default(autoincrement())
+  judul       String  @map("Judul") @db.Text
+  isi         String  @map("Isi") @db.Text
 
-  /// @@ignore
+  @@map("tblpages")
+}
+
+model password_resets {
+  id          Int      @id @default(autoincrement())
+  user_id     Int?
+  reset_token String   @db.VarChar(255)
+  expires_at  DateTime @default(now())
+  created_at  DateTime @default(now())
+  admin       Admin?   @relation(fields: [user_id], references: [id])
+}
+
+enum tbladmin_role {
+  ADMIN
+  KONSELOR
+  KONTRIBUTOR
+  USER
+}
+
+enum tbladmin_status {
+  active
+  inactive
+  suspended
+  deleted
 }
 
 enum tblkonselor_sex {
-  P
-  L
+  FEMALE @map("P")
+  MALE   @map("L")
 }
 
 enum bantu_jawab_publish {

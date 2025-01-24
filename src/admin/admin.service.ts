@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
+  
   // Tambahkan Admin baru
   async createAdmin(data: Prisma.AdminCreateInput) {
     return this.prisma.admin.create({ data });
