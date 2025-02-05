@@ -17,6 +17,7 @@ import { PertanyaanService } from './pertanyaan.service';
 export class PertanyaanController {
   constructor(private readonly pertanyaanService: PertanyaanService) {}
 
+  // ----------------------------------------------------------------
   @Post()
   create(
     @Body()
@@ -30,6 +31,7 @@ export class PertanyaanController {
     return this.pertanyaanService.createPertanyaan(body);
   }
 
+  // ----------------------------------------------------------------
   @Get()
   async findAll(
     @Query('page') page: number = 1,
@@ -39,11 +41,13 @@ export class PertanyaanController {
     return this.pertanyaanService.findAllPertanyaan(page, limit, search);
   }
 
+  // ----------------------------------------------------------------  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.pertanyaanService.findPertanyaanById(Number(id));
   }
 
+  // ----------------------------------------------------------------  
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() body: any) {
