@@ -19,6 +19,7 @@ model Admin {
   created_at DateTime @default(now())
 
   password_resets password_resets[]
+  pertanyaan Pertanyaan[]
 
   @@map("tbladmin")
 }
@@ -42,11 +43,12 @@ model guest_book {
   tgl        DateTime @default(now()) @db.Timestamp(0)
 }
 
-model kategori {
-  id       Int    @id @default(autoincrement())
-  kategori String @db.VarChar(50)
+model Kategori {
+  id            Int    @id @default(autoincrement())
+  nama_kategori String @db.VarChar(50)
+  pertanyaan    Pertanyaan[]
 
-  @@index([kategori], map: "idx_kategori")
+  @@index([id], map: "idx_kategori")
 }
 
 model links {
@@ -69,11 +71,16 @@ model Pertanyaan {
   id          Int      @id @default(autoincrement())
   nama        String   @db.VarChar(100)
   email       String   @db.VarChar(100)
+  telpon      String?   @db.VarChar(20)
   kategori_id Int?
   pertanyaan  String   @db.Text
   jawaban     String?   @db.Text
   id_admin    Int?
   tgl         DateTime @default(now()) @db.Timestamp(0)
+  publish     Int?
+
+  kategori    Kategori? @relation(fields: [kategori_id], references: [id])
+  admin       Admin?    @relation(fields: [id_admin], references: [id])
 
   @@index([kategori_id], map: "fk_kategori")
   @@index([nama, email], map: "idx_nama_email")
@@ -87,7 +94,7 @@ model Artikel {
   judul String  @map("Judul") @db.Text
   isi   String  @map("Isi")  @db.Text
   tgl   DateTime @map("Tgl")  @db.Date
-  @@map("tblartikel")
+  @@map("tblnews_artikel")
   /// @@ignore
 }
 
@@ -105,7 +112,7 @@ model Konselor {
   tampil_email  tblkonselor_tampil_email?
   tampil_hp     tblkonselor_tampil_hp?
   tampil_alamat tblkonselor_tampil_alamat?
-  gambar        String?                    @db.VarChar(150)
+  photo        String?                    @db.VarChar(150)
 
   @@map("tblkonselor")
   /// @@ignore

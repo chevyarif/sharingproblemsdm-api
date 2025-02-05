@@ -6,36 +6,56 @@ import { Prisma } from '@prisma/client';
 export class PertanyaanService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Tambahkan pertanyaan baru
+  // ----------------------------------------------------------------
   async createPertanyaan(data: Prisma.PertanyaanCreateInput) {
     return this.prisma.pertanyaan.create({ data });
   }
 
-  // Ambil semua pertanyaan
+  // ----------------------------------------------------------------
   async findAllPertanyaan(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
     const take = Number(limit);
-
     const lowerSearch = search ? search.toLowerCase() : undefined;
 
     // Fetch data from database
     const artikel = await this.prisma.pertanyaan.findMany({
       skip: skip,
       take: take,
-      where: search
-        ? {
-            OR: [{ pertanyaan: { contains: lowerSearch } }],
-          }
-        : {},
+      where: {
+        AND: [
+          { publish: 1 },
+          search
+            ? {
+                OR: [{ pertanyaan: { contains: lowerSearch } }],
+              }
+            : {},
+        ],
+      },
+      include: {
+        kategori: true,
+        admin: {
+          select: {
+            fullname: true,
+          },
+        },
+      },
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     // Count total records for pagination
     const totalPertanyaan = await this.prisma.pertanyaan.count({
-      where: search
-        ? {
-            OR: [{ pertanyaan: { contains: lowerSearch } }],
-          }
-        : {},
+      where: {
+        AND: [
+          { publish: 1 }, // Filter for publish = 1
+          search
+            ? {
+                OR: [{ pertanyaan: { contains: lowerSearch } }],
+              }
+            : {},
+        ],
+      },
     });
 
     // Apply masking to each record
@@ -52,6 +72,11 @@ export class PertanyaanService {
         ...item,
         email: maskedEmail,
         nama: maskedNama,
+        kategori_id: undefined,
+        kategori: item.kategori?.nama_kategori,
+        publish: undefined,
+        admin_fullname: item.admin?.fullname,
+        id_admin: undefined,
       };
     });
 
@@ -66,7 +91,7 @@ export class PertanyaanService {
     };
   }
 
-  // Ambil pertanyaan berdasarkan ID
+  // ----------------------------------------------------------------
   async findPertanyaanById(id: number) {
     const pertanyaan = await this.prisma.pertanyaan.findUnique({
       where: { id },
@@ -94,7 +119,7 @@ export class PertanyaanService {
     return null;
   }
 
-  // Update pertanyaan berdasarkan ID
+  // ----------------------------------------------------------------
   async updatePertanyaan(id: number, data: Prisma.NewsUpdateInput) {
     return this.prisma.pertanyaan.update({
       where: { id },
@@ -102,8 +127,8 @@ export class PertanyaanService {
     });
   }
 
-  // Hapus pertanyaan berdasarkan ID
-  async deleteNews(id: number) {
-    return this.prisma.news.delete({ where: { id } });
+  // ----------------------------------------------------------------
+  async deletePertanyaan(id: number) {
+    return this.prisma.pertanyaan.delete({ where: { id } });
   }
 }
